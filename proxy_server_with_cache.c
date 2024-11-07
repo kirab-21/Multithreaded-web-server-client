@@ -18,6 +18,7 @@
 
 
 #define MAX_CLIENTS 10
+#define MAX_BYTES 10*(1 << 10) /* (1 << 10) = 2^10 */
 
 typedef struct cache_element cache_element;
 
@@ -41,6 +42,18 @@ pthread_mutex_t lock;
 
 cache_element* head;
 int cache_size;
+
+void *thread_fn(void *socketNew) {
+    sem_wait(&semaphore);
+    int p;
+    sem_getvalue(&semaphore, p);
+    printf("Semaphore value is: %d\n", p);
+    int *t = (int*) socketNew;
+    int socket = *t;
+    int bytes_send_client, len;
+
+    char *buffer = (char*)calloc(MAX_BYTES);
+}
 
 int main(int argc, char* argv[]) {
     int client_socketId, client_len;
@@ -77,7 +90,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
     printf("Binding on port %d ...\n", port_number);
-    int listen_status = listen(proxy_socketId);
+    int listen_status = listen(proxy_socketId, MAX_CLIENTS);
     if(listen_status < 0) {
         perror("Error is listening \n");
         exit(1);
